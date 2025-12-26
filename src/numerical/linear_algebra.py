@@ -47,11 +47,17 @@ def matrix_multiply(A: List[List[float]], B: List[List[float]]) -> List[List[flo
     rows_A = len(A)
     cols_A = len(A[0])
     cols_B = len(B[0])
-    result = [[0 for _ in range(cols_B)] for _ in range(rows_A)]
+    # Pre-allocate the result with zeros using list multiplication for speed
+    result = [[0.0] * cols_B for _ in range(rows_A)]
+    # Transpose B for better cache locality (improves innermost loop performance)
+    B_T = list(zip(*B))
     for i in range(rows_A):
+        row_A = A[i]
+        result_row = result[i]
         for j in range(cols_B):
-            for k in range(cols_A):
-                result[i][j] += A[i][k] * B[k][j]
+            col_B = B_T[j]
+            # Use local variables and accumulate via sum+generator
+            result_row[j] = sum(row_A[k] * col_B[k] for k in range(cols_A))
     return result
 
 
