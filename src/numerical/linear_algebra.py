@@ -57,22 +57,14 @@ def matrix_multiply(A: List[List[float]], B: List[List[float]]) -> List[List[flo
 
 def matrix_decomposition_LU(A: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     n = A.shape[0]
-    L = np.zeros((n, n))
+    L = np.eye(n)
     U = np.zeros((n, n))
     for i in range(n):
         for k in range(i, n):
-            sum_val = 0
-            for j in range(i):
-                sum_val += L[i, j] * U[j, k]
-            U[i, k] = A[i, k] - sum_val
-        L[i, i] = 1
-        for k in range(i + 1, n):
-            sum_val = 0
-            for j in range(i):
-                sum_val += L[k, j] * U[j, i]
-            if U[i, i] == 0:
-                raise ValueError("Cannot perform LU decomposition")
-            L[k, i] = (A[k, i] - sum_val) / U[i, i]
+            U[i, k] = A[i, k] - np.dot(L[i, :i], U[:i, k])
+        if U[i, i] == 0:
+            raise ValueError("Cannot perform LU decomposition")
+        L[i+1:n, i] = (A[i+1:n, i] - np.dot(L[i+1:n, :i], U[:i, i])) / U[i, i]
     return L, U
 
 
