@@ -28,25 +28,31 @@ def _get_all_json_refs(item: Any) -> set[JsonRef]:
 def sort_chat_inputs_first(self, vertices_layers: list[list[str]]) -> list[list[str]]:
     """Sort vertices to prioritize chat inputs in the first layer."""
     # First check if any chat inputs have dependencies
+    # First check if any chat inputs have dependencies
+    chat_input_present = False
     for layer in vertices_layers:
         for vertex_id in layer:
-            if "ChatInput" in vertex_id and self.get_predecessors(
-                self.get_vertex(vertex_id)
-            ):
-                return vertices_layers
+            if "ChatInput" in vertex_id:
+                chat_input_present = True
+                vertex = self.get_vertex(vertex_id)
+                if self.get_predecessors(vertex):
+                    return vertices_layers
+    if not chat_input_present:
+        return vertices_layers
 
     # If no chat inputs have dependencies, move them to first layer
-    chat_inputs_first = []
+    chat_inputs_first: list[str] = []
+    new_vertices_layers: list[list[str]] = []
+
     for layer in vertices_layers:
-        layer_chat_inputs_first = [
-            vertex_id for vertex_id in layer if "ChatInput" in vertex_id
-        ]
-        chat_inputs_first.extend(layer_chat_inputs_first)
-        for vertex_id in layer_chat_inputs_first:
-            # Remove the ChatInput from the layer
-            layer.remove(vertex_id)
+        chat_inputs = [vertex_id for vertex_id in layer if "ChatInput" in vertex_id]
+        non_chat_inputs = [vertex_id for vertex_id in layer if "ChatInput" not in vertex_id]
+        chat_inputs_first.extend(chat_inputs)
+        if non_chat_inputs:
+            new_vertices_layers.append(non_chat_inputs)
+
 
     if not chat_inputs_first:
         return vertices_layers
 
-    return [chat_inputs_first, *vertices_layers]
+    return [chat_inputs_first, *new_vertices_layers]
