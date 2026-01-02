@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.ndimage import convolve
 
 
 def manual_convolution_1d(signal: np.ndarray, kernel: np.ndarray) -> np.ndarray:
@@ -22,25 +23,14 @@ def gaussian_blur(
     height, width = image.shape[:2]
     channels = 1 if len(image.shape) == 2 else image.shape[2]
     output = np.zeros_like(image)
-    for y in range(height):
-        for x in range(width):
-            for c in range(channels):
-                weighted_sum = 0
-                weight_sum = 0
-                for ky in range(-k, k + 1):
-                    for kx in range(-k, k + 1):
-                        ny, nx = y + ky, x + kx
-                        if 0 <= ny < height and 0 <= nx < width:
-                            if channels == 1:
-                                pixel_value = image[ny, nx]
-                            else:
-                                pixel_value = image[ny, nx, c]
-                            weight = kernel[ky + k, kx + k]
-                            weighted_sum += pixel_value * weight
-                            weight_sum += weight
-                if weight_sum > 0:
-                    if channels == 1:
-                        output[y, x] = weighted_sum / weight_sum
-                    else:
-                        output[y, x, c] = weighted_sum / weight_sum
+    mask = np.ones_like(image, dtype=np.float64)
+    if channels == 1:
+        conv_img = convolve(image.astype(np.float64), kernel, mode='constant', cval=0.0)
+        conv_mask = convolve(mask, kernel, mode='constant', cval=0.0)
+        np.divide(conv_img, conv_mask, out=output, where=conv_mask > 0)
+    else:
+        for c in range(channels):
+            conv_img = convolve(image[:, :, c].astype(np.float64), kernel, mode='constant', cval=0.0)
+            conv_mask = convolve(mask[:, :, c], kernel, mode='constant', cval=0.0)
+            np.divide(conv_img, conv_mask, out=output[:, :, c], where=conv_mask > 0)
     return output
