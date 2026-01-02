@@ -8,7 +8,12 @@ def fibonacci(n):
 
 
 def matrix_sum(matrix: list[list[int]]) -> list[int]:
-    return [sum(matrix[i]) for i in range(len(matrix)) if sum(matrix[i]) > 0]
+    result = []
+    for row in matrix:
+        row_sum = sum(row)
+        if row_sum > 0:
+            result.append(row_sum)
+    return result
 
 
 def matrix_chain_order(matrices: list[tuple[int, int]]) -> int:
@@ -43,14 +48,21 @@ def matrix_chain_order(matrices: list[tuple[int, int]]) -> int:
 
 
 def coin_change(coins: list[int], amount: int, index: int) -> int:
-    if amount == 0:
-        return 1
-    if amount < 0 or index >= len(coins):
-        return 0
+    memo: dict[tuple[int, int], int] = {}
 
-    return coin_change(coins, amount - coins[index], index) + coin_change(
-        coins, amount, index + 1
-    )
+    def dp(amount: int, index: int) -> int:
+        if amount == 0:
+            return 1
+        if amount < 0 or index >= len(coins):
+            return 0
+        key = (amount, index)
+        if key in memo:
+            return memo[key]
+        res = dp(amount - coins[index], index) + dp(amount, index + 1)
+        memo[key] = res
+        return res
+
+    return dp(amount, index)
 
 
 def knapsack(weights: list[int], values: list[int], capacity: int, n: int) -> int:
