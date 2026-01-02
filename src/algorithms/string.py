@@ -4,10 +4,10 @@ import re
 
 
 def string_concat(n):
-    s = ""
+    parts = []
     for i in range(n):
-        s += str(i)
-    return s
+        parts.append(str(i))
+    return ''.join(parts)
 
 
 def regex_match(strings: list[str], pattern: str) -> list[str]:
