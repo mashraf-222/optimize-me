@@ -19,10 +19,21 @@ def regex_match(strings: list[str], pattern: str) -> list[str]:
 
 
 def is_palindrome(text: str) -> bool:
-    cleaned_text = "".join(c.lower() for c in text if c.isalnum())
-    for i in range(len(cleaned_text) // 2):
-        if cleaned_text[i] != cleaned_text[len(cleaned_text) - 1 - i]:
+    left = 0
+    right = len(text) - 1
+    while left < right:
+        c_left = text[left]
+        if not c_left.isalnum():
+            left += 1
+            continue
+        c_right = text[right]
+        if not c_right.isalnum():
+            right -= 1
+            continue
+        if c_left.lower() != c_right.lower():
             return False
+        left += 1
+        right -= 1
     return True
 
 
