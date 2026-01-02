@@ -5,11 +5,17 @@ import pandas as pd
 
 
 def dataframe_filter(df: pd.DataFrame, column: str, value: Any) -> pd.DataFrame:
-    indices = []
-    for i in range(len(df)):
-        if df.iloc[i][column] == value:
-            indices.append(i)
-    return df.iloc[indices].reset_index(drop=True)
+    # When value is not a scalar (e.g. list), == does elementwise/raises error
+    # Use original logic for object dtype columns/values, optimized otherwise
+    try:
+        filtered_df = df[df[column] == value]
+        return filtered_df.reset_index(drop=True)
+    except ValueError:
+        indices = []
+        for i in range(len(df)):
+            if df.iloc[i][column] == value:
+                indices.append(i)
+        return df.iloc[indices].reset_index(drop=True)
 
 
 def groupby_mean(df: pd.DataFrame, group_col: str, value_col: str) -> dict[Any, float]:
